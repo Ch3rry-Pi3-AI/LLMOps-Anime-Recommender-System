@@ -1,7 +1,7 @@
-# 🧠 **Vector Store Creation — LLMOps Anime Recommender System**
+# 🤖 **LLM-Powered Recommender Integration — LLMOps Anime Recommender System**
 
-This stage introduces the **vector store component** of the **LLMOps Anime Recommender System**.
-The `VectorStoreBuilder` class constructs a **Chroma vector database** from the preprocessed anime dataset, allowing fast and efficient **semantic search** and **similarity retrieval** for recommendations powered by large language models.
+This stage introduces the **final core backend component** of the **LLMOps Anime Recommender System** — the **anime recommender engine**.
+The `AnimeRecommender` class integrates the **retriever**, **vector store**, **prompt template**, and **Groq LLM**, enabling **end-to-end, retrieval-augmented anime recommendations**.
 
 ## 🗂️ **Project Structure (Updated)**
 
@@ -13,11 +13,13 @@ llmops_anime_recommender_system/
 ├── app/                             # 🎨 Streamlit application (to be developed)
 ├── config/
 │   └── config.py                    # ⚙️ Loads environment variables and model configuration
-├── data/
+├── data/                            # 📊 Contains raw and processed anime datasets
 ├── pipeline/                        # 🔁 Placeholder for workflow scripts
 ├── src/
 │   ├── data_loader.py               # 📥 Loads and preprocesses the anime dataset
-│   └── vector_store_builder.py      # 🧠 Builds and loads the Chroma vector store
+│   ├── vector_store_builder.py      # 🧠 Builds and loads the Chroma vector store
+│   ├── prompt_template.py           # 💬 Defines the structured LLM prompt
+│   └── recommender.py               # 🤖 Generates LLM-based anime recommendations
 ├── utils/
 │   ├── __init__.py
 │   ├── custom_exception.py          # Unified error handling
@@ -29,49 +31,59 @@ llmops_anime_recommender_system/
 └── README.md                        # 📖 Documentation (you are here)
 ```
 
-## ⚙️ **Overview of `vector_store_builder.py`**
+## ⚙️ **Overview of `recommender.py`**
 
-The **`VectorStoreBuilder`** class, located in `src/vector_store_builder.py`, handles embedding generation and vector database construction.
+The **`AnimeRecommender`** class serves as the heart of the system — connecting the vector store retriever and the Groq LLM via a **RetrievalQA** chain.
+This module completes the **retrieval-augmented generation (RAG)** pipeline that powers the anime recommendation process.
 
 ### Key Functions
 
-1. **Loads the processed CSV** (from the data loader output).
-2. **Splits text** into manageable chunks using `CharacterTextSplitter` for optimal embedding performance.
-3. **Generates embeddings** with `HuggingFaceEmbeddings` (`all-MiniLM-L6-v2`).
-4. **Stores embeddings** in a persistent **Chroma vector database** for efficient similarity search.
-5. Provides a **loader method** to easily reload the stored vector database for later use.
+1. **Initialises the Groq LLM** (`ChatGroq`) with a fixed temperature for consistent, factual responses.
+2. **Combines** the retriever, prompt template, and LLM into a single LangChain `RetrievalQA` chain.
+3. **Retrieves relevant anime context** from the Chroma vector database.
+4. **Generates structured, user-specific recommendations** using the LLM and predefined prompt.
 
 ### Example Usage
 
 ```python
+from src.recommender import AnimeRecommender
 from src.vector_store_builder import VectorStoreBuilder
+from config.config import GROQ_API_KEY, MODEL_NAME
 
-builder = VectorStoreBuilder(
-    csv_path="data/processed_anime.csv",
-    persist_dir="chroma_db"
+# Load vector store and create retriever
+builder = VectorStoreBuilder(csv_path="data/processed_anime.csv")
+vector_store = builder.load_vector_store()
+retriever = vector_store.as_retriever()
+
+# Create the recommender
+recommender = AnimeRecommender(
+    retriever=retriever,
+    api_key=GROQ_API_KEY,
+    model_name=MODEL_NAME
 )
 
-# Build and save the Chroma vector store
-builder.build_and_save_vectorstore()
-
-# Load the vector store when needed
-vector_store = builder.load_vector_store()
-print("✅ Vector store loaded successfully.")
+# Generate recommendations
+query = "Recommend anime with deep character development and emotional storytelling."
+response = recommender.get_recommendation(query)
+print(response)
 ```
 
 ### Output Example
 
 ```
-✅ Vector store loaded successfully.
-Chroma database persisted at: chroma_db/
+1. Violet Evergarden — A young woman trained as a weapon learns to write letters that connect people...
+2. Clannad: After Story — A heartfelt exploration of love, loss, and family...
+3. Your Lie in April — A touching story of music, grief, and personal growth...
+
+Each of these anime explores emotional themes and strong character arcs.
 ```
 
-The generated Chroma database (`chroma_db/`) will store all anime embeddings locally, enabling quick access for future recommendation queries.
+The recommender retrieves relevant context from the **Chroma vector store**, injects it into the **prompt template**, and uses the **Groq LLM** to generate meaningful, structured, and human-like responses.
 
 ## ✅ **In Summary**
 
-This stage establishes the **semantic foundation** of the LLMOps Anime Recommender System:
+This stage completes the **core backend workflow** of the project:
 
-* Introduces `VectorStoreBuilder` for **embedding generation and persistence**.
-* Enables **semantic similarity search** across anime descriptions.
-* Prepares the groundwork for **retrieval-augmented recommendations** and **LLM-powered reasoning** in subsequent stages.
+* Integrates `AnimeRecommender` for **end-to-end RAG-based inference**.
+* Connects the **data loader**, **vector store**, and **prompt template** into a unified recommendation pipeline.
+* Establishes a fully functional **LLM-powered anime recommendation engine**, paving the way for Streamlit frontend integration in the next phase.
