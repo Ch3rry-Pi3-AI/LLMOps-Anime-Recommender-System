@@ -1,7 +1,7 @@
-# 🧩 **Data Loader Creation — LLMOps Anime Recommender System**
+# 🧠 **Vector Store Creation — LLMOps Anime Recommender System**
 
-This stage introduces the **first core module** in the **LLMOps Anime Recommender System**: a simple yet essential **data loader** responsible for reading and preprocessing the anime dataset.
-The `AnimeDataLoader` class ensures that all required fields are present, handles basic cleaning, and produces a compact processed file ready for later embedding and recommendation tasks.
+This stage introduces the **vector store component** of the **LLMOps Anime Recommender System**.
+The `VectorStoreBuilder` class constructs a **Chroma vector database** from the preprocessed anime dataset, allowing fast and efficient **semantic search** and **similarity retrieval** for recommendations powered by large language models.
 
 ## 🗂️ **Project Structure (Updated)**
 
@@ -14,10 +14,12 @@ llmops_anime_recommender_system/
 ├── config/
 │   └── config.py                    # ⚙️ Loads environment variables and model configuration
 ├── data/
-│   └── anime__with__synopsis.csv    # 📊 Dataset used by the data loader
-├── pipeline/                        # 🔁 Placeholder for future workflow scripts
+│   ├── anime__with__synopsis.csv    # 📊 Original dataset
+│   └── processed_anime.csv          # ✅ Output from the data loader
+├── pipeline/                        # 🔁 Placeholder for workflow scripts
 ├── src/
-│   └── data_loader.py               # 📥 Loads and preprocesses the anime dataset
+│   ├── data_loader.py               # 📥 Loads and preprocesses the anime dataset
+│   └── vector_store_builder.py      # 🧠 Builds and loads the Chroma vector store
 ├── utils/
 │   ├── __init__.py
 │   ├── custom_exception.py          # Unified error handling
@@ -29,40 +31,49 @@ llmops_anime_recommender_system/
 └── README.md                        # 📖 Documentation (you are here)
 ```
 
-## ⚙️ **Overview of `data_loader.py`**
+## ⚙️ **Overview of `vector_store_builder.py`**
 
-The **`AnimeDataLoader`** class, located in `src/data_loader.py`, performs three key functions:
+The **`VectorStoreBuilder`** class, located in `src/vector_store_builder.py`, handles embedding generation and vector database construction.
 
-1. **Loads** the raw anime dataset from the `data/` directory.
-2. **Validates** required columns (`Name`, `Genres`, `sypnopsis`) and raises an error if any are missing.
-3. **Combines** text fields into a single column (`combined_info`) to streamline downstream text embedding.
+### Key Functions
+
+1. **Loads the processed CSV** (from the data loader output).
+2. **Splits text** into manageable chunks using `CharacterTextSplitter` for optimal embedding performance.
+3. **Generates embeddings** with `HuggingFaceEmbeddings` (`all-MiniLM-L6-v2`).
+4. **Stores embeddings** in a persistent **Chroma vector database** for efficient similarity search.
+5. Provides a **loader method** to easily reload the stored vector database for later use.
 
 ### Example Usage
 
 ```python
-from src.data_loader import AnimeDataLoader
+from src.vector_store_builder import VectorStoreBuilder
 
-loader = AnimeDataLoader(
-    original_csv="data/anime__with__synopsis.csv",
-    processed_csv="data/processed_anime.csv"
+builder = VectorStoreBuilder(
+    csv_path="data/processed_anime.csv",
+    persist_dir="chroma_db"
 )
 
-processed_path = loader.load_and_process()
-print(f"Processed dataset saved at: {processed_path}")
+# Build and save the Chroma vector store
+builder.build_and_save_vectorstore()
+
+# Load the vector store when needed
+vector_store = builder.load_vector_store()
+print("✅ Vector store loaded successfully.")
 ```
 
 ### Output Example
 
 ```
-Processed dataset saved at: data/processed_anime.csv
+✅ Vector store loaded successfully.
+Chroma database persisted at: chroma_db/
 ```
 
-The resulting file includes one column (`combined_info`) containing the formatted combination of title, synopsis, and genres for each anime.
+The generated Chroma database (`chroma_db/`) will store all anime embeddings locally, enabling quick access for future recommendation queries.
 
 ## ✅ **In Summary**
 
-This update marks the **first data-processing milestone** in the project:
+This stage establishes the **semantic foundation** of the LLMOps Anime Recommender System:
 
-* Introduces `AnimeDataLoader` for reliable dataset ingestion and preparation.
-* Adds structure and validation logic to ensure consistency for later stages.
-* Prepares the data for **embedding generation and recommendation modelling** in upcoming phases.
+* Introduces `VectorStoreBuilder` for **embedding generation and persistence**.
+* Enables **semantic similarity search** across anime descriptions.
+* Prepares the groundwork for **retrieval-augmented recommendations** and **LLM-powered reasoning** in subsequent stages.
