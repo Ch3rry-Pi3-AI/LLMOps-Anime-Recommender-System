@@ -14,8 +14,6 @@ llmops_anime_recommender_system/
 ├── config/
 │   └── config.py                    # ⚙️ Loads environment variables and model configuration
 ├── data/
-│   ├── anime__with__synopsis.csv    # 📊 Original dataset
-│   └── processed_anime.csv          # ✅ Output from the data loader
 ├── pipeline/                        # 🔁 Placeholder for workflow scripts
 ├── src/
 │   ├── data_loader.py               # 📥 Loads and preprocesses the anime dataset
