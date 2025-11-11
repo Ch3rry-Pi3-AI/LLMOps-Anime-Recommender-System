@@ -65,12 +65,12 @@ You should see your email and username listed.
 
 Make sure to **copy the token immediately** — GitHub will not show it again.
 
-## 🚀 **Step 4 — Authenticate and Push to GitHub**
+## 🚀 **Step 4 — Authenticate and Pull from GitHub**
 
-Now that your token is ready, you can push from the VM to your GitHub repository.
+Now that your token is ready, you can pull from the GitHub repository to your VM.
 
 ```bash
-git push origin main
+git pull origin main
 ```
 
 When prompted:
