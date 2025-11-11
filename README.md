@@ -1,169 +1,217 @@
-# 🚀 **Kubernetes Deployment — LLMOps Anime Recommender System**
+# 📊 **Grafana Cloud Monitoring — LLMOps Anime Recommender System**
 
-In this stage, we deploy the **LLMOps Anime Recommender System** onto a **Kubernetes cluster** running on our **Minikube setup within a GCP VM**.
-This stage brings the entire project to life — containerising the application and serving it publicly via Kubernetes services.
+This stage integrates **Grafana Cloud Monitoring** with the **LLMOps Anime Recommender System**, enabling **real-time observability** of your Kubernetes cluster and application performance.  
+It provides complete visibility into **metrics**, **logs**, and **traces** through Grafana Cloud’s managed dashboards.
 
-## 🧭 **Step 1 — Connect Docker to Minikube**
+<p align="center">
+  <img src="img/grafana/dashboard.png" alt="Grafana Cloud Dashboard for Kubernetes Monitoring" style="width:100%; height:auto;" />
+</p>
 
-In your VM terminal, run the following command:
+## ☁️ **Overview**
 
-```bash
-eval $(minikube docker-env)
-```
+In this stage, Grafana Cloud is configured to collect and display monitoring data from your local Kubernetes cluster (**Minikube**) using the **Grafana k8s-monitoring Helm chart**.  
+This setup installs a suite of Grafana Alloy agents and exporters that gather metrics and logs from your cluster, feeding them securely into your Grafana Cloud workspace.
 
-This command ensures Docker points to Minikube’s internal environment so that your image builds directly inside Minikube’s Docker daemon.
+## 🧱 **1. Create a Monitoring Namespace**
 
-Now, build your Docker image:
-
-```bash
-docker build -t llmops-app:latest .
-```
-
-This may take a few minutes to complete, as it will install all dependencies and package your Streamlit app into a container.
-
-Once complete, verify that your image was successfully built:
+Open a new VM terminal and create a dedicated namespace for monitoring:
 
 ```bash
-docker images
-```
-
-You should see output similar to:
-
-```
-IMAGE                                             ID             DISK USAGE   
-gcr.io/k8s-minikube/storage-provisioner:v5        6e38f40d628d       31.5MB      
-llmops-app:latest                                 ec877b27d650       8.64GB      
-registry.k8s.io/coredns/coredns:v1.12.1           52546a367cc9         75MB      
-registry.k8s.io/etcd:3.6.4-0                      5f1f5298c888        195MB      
-registry.k8s.io/kube-apiserver:v1.34.0            90550c43ad2b         88MB      
-registry.k8s.io/kube-controller-manager:v1.34.0   a0af72f2ec6d       74.9MB      
-registry.k8s.io/kube-proxy:v1.34.0                df0860106674       71.9MB      
-registry.k8s.io/kube-scheduler:v1.34.0            46169d968e92       52.8MB      
-registry.k8s.io/pause:3.10.1                      cd073f4c5f6a        736kB 
-```
-
-Your `llmops-app:latest` image is now built and ready to deploy.
-
-## 🔐 **Step 2 — Inject Secrets into Kubernetes**
-
-Next, we need to securely inject your **Groq** and **Hugging Face API keys** into the Kubernetes environment.
-
-Run the following command:
-
-```bash
-kubectl create secret generic llmops-secrets \
-  --from-literal=GROQ_API_KEY="" \
-  --from-literal=HUGGINGFACEHUB_API_TOKEN=""
-```
-
-Make sure to replace the empty quotation marks `""` with your actual API keys.
-
-Example:
-
-```bash
-kubectl create secret generic llmops-secrets \
-  --from-literal=GROQ_API_KEY="your_groq_key_here" \
-  --from-literal=HUGGINGFACEHUB_API_TOKEN="your_huggingface_key_here"
-```
-
-You should see confirmation:
-
-```
-secret/llmops-secrets created
-```
-
-## 🧩 **Step 3 — Deploy the Application**
-
-Now apply your Kubernetes deployment and service configuration:
-
-```bash
-kubectl apply -f llmops-k8s.yaml
-```
+kubectl create ns monitoring
+````
 
 Expected output:
 
 ```
-deployment.apps/llmops-app created
-service/llmops-service created
+namespace/monitoring created
 ```
 
-You can verify the pods are running with:
+Verify:
 
 ```bash
-kubectl get pods
+kubectl get ns
 ```
 
-Example output:
+Output:
 
 ```
-NAME                         READY   STATUS    RESTARTS   AGE
-llmops-app-8fb4d677f-bzm9k   1/1     Running   0          32s
+NAME              STATUS   AGE
+default           Active   99m
+kube-node-lease   Active   99m
+kube-public       Active   99m
+kube-system       Active   99m
+monitoring        Active   43s
 ```
 
-This confirms that your container is up and running successfully inside the cluster.
+## 🪜 **2. Install Helm**
 
-## 🌐 **Step 4 — Create a Minikube Tunnel**
-
-To expose your service externally, start a **Minikube tunnel**:
+Visit [Helm Installation Guide](https://helm.sh/docs/intro/install/) and scroll to the **“From Script”** section.
+Run the following commands **one at a time** in your terminal:
 
 ```bash
-minikube tunnel
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
 ```
+
+Output:
+
+```
+Downloading https://get.helm.sh/helm-v3.19.0-linux-amd64.tar.gz
+Verifying checksum... Done.
+Preparing to install helm into /usr/local/bin
+helm installed into /usr/local/bin/helm
+```
+
+## 🧭 **3. Set Up Grafana Cloud**
+
+1. Go to [Grafana Cloud](https://grafana.com/products/cloud/).
+2. Sign up for an account (free-forever tier after 14-day trial).
+3. Launch your Grafana Cloud dashboard.
+4. In the left panel, go to **Observability → Kubernetes**.
+
+<p align="center">
+  <img src="img/grafana/observabilit.png" alt="Grafana Cloud Observability Section" style="width:100%; height:auto;" />
+</p>
+
+Click **Activate Kubernetes Monitoring**, then **Start sending data**.
+
+<p align="center">
+  <img src="img/grafana/start_sending_data.png" alt="Start Sending Data to Grafana" style="width:100%; height:auto;" />
+</p>
+
+Scroll down and click **Install**.
+
+<p align="center">
+  <img src="img/grafana/install.png" alt="Grafana Cloud Installation Step" style="width:100%; height:auto;" />
+</p>
+
+Enter:
+
+* **Cluster name:** `minikube`
+* **Namespace:** `monitoring`
+* Ensure **Kubernetes** is selected.
+
+Create a new token called **grafana-token** and copy it for later.
+
+<p align="center">
+  <img src="img/grafana/grafana_token.png" alt="Grafana Cloud Token Creation" style="width:100%; height:auto;" />
+</p>
+
+## ⚙️ **4. Configure Helm for Grafana Monitoring**
+
+Select **Helm** as the installation method.
+
+<p align="center">
+  <img src="img/grafana/helm.png" alt="Helm Installation Option in Grafana Cloud" style="width:100%; height:auto;" />
+</p>
+
+In your VM terminal, open a new file:
+
+```bash
+vi values.yaml
+```
+
+Copy the **deployment code** provided by Grafana into a notepad.
+Cut the **first four lines** into a separate note and remove the `EOF` from the bottom of the script.
+Paste the remaining code into your `values.yaml` file and save it.
+
+Then edit the four lines you separated to look like this:
+
+```bash
+helm repo add grafana https://grafana.github.io/helm-charts &&
+  helm repo update &&
+  helm upgrade --install --atomic --timeout 300s grafana-k8s-monitoring grafana/k8s-monitoring \
+    --namespace "monitoring" --create-namespace --values values.yaml
+```
+
+Run this command block in your terminal.
 
 Expected output:
 
 ```
-Status:
-        machine: minikube
-        pid: 31651
-        route: 10.96.0.0/12 -> 192.168.49.2
-        minikube: Running
-        services: [llmops-service]
-    errors: 
-                minikube: no errors
-                router: no errors
-                loadbalancer emulator: no errors
+"grafana" has been added to your repositories
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "grafana" chart repository
+Update Complete. ⎈Happy Helming!⎈
+Release "grafana-k8s-monitoring" does not exist. Installing it now.
 ```
 
-Leave this terminal **running** — it maintains the connection that allows external access to your app.
+## 🚀 **5. Deployment Confirmation**
 
-## 💻 **Step 5 — Forward Ports and Access the App**
+After a few minutes, you should see:
 
-Open a **new SSH terminal** (keeping the tunnel active in the previous one).
-Navigate back to your project directory and run:
+```
+Release "grafana-k8s-monitoring" does not exist. Installing it now.
+NAME: grafana-k8s-monitoring
+LAST DEPLOYED: Tue Nov 11 19:14:07 2025
+NAMESPACE: monitoring
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+Grafana k8s-monitoring Helm chart deployed!
+```
+
+### Components Installed
+
+* Grafana Alloy Operator
+* kube-state-metrics (Deployment)
+* Node Exporter (DaemonSet)
+* Windows Exporter (DaemonSet)
+* Kepler (DaemonSet)
+* Grafana Alloy “alloy-metrics” (StatefulSet)
+* Grafana Alloy “alloy-singleton” (Deployment)
+* Grafana Alloy “alloy-logs” (DaemonSet)
+* Grafana Alloy “alloy-receiver” (DaemonSet)
+
+### Data Collection Overview
+
+* Scrapes Kubernetes cluster metrics to **Grafana Cloud Metrics**
+* Sends logs and events to **Grafana Cloud Logs**
+* Sends telemetry traces via **OTLP gRPC / HTTP / Zipkin**
+
+### Application Telemetry Endpoints
+
+```
+http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:4317  (OTLP gRPC)
+http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:4318  (OTLP HTTP)
+http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:9411  (Zipkin)
+```
+
+## 🔍 **6. Verify Deployment**
+
+Check the pods:
 
 ```bash
-kubectl port-forward svc/llmops-service 8501:80 --address 0.0.0.0
+kubectl get pods -n monitoring
 ```
 
-This forwards external traffic from port **8501** to your Streamlit app inside Kubernetes.
-
-Keep this terminal open while your application is running.
-
-Now, return to your **GCP Console → VM Instances** page, find your **External IP address**, and click **Copy**.
-In your browser, visit:
+Output:
 
 ```
-http://<YOUR_EXTERNAL_IP>:8501
+NAME                                                         READY   STATUS    RESTARTS      AGE
+grafana-k8s-monitoring-alloy-logs-b64zw                      2/2     Running   0             2m50s
+grafana-k8s-monitoring-alloy-metrics-0                       2/2     Running   0             2m50s
+grafana-k8s-monitoring-alloy-operator-7b4b7c74c-87d75        1/1     Running   0             3m8s
+grafana-k8s-monitoring-alloy-receiver-gnbv6                  2/2     Running   0             2m50s
+grafana-k8s-monitoring-alloy-singleton-f5f9d6976-rxq5r       2/2     Running   0             2m50s
+grafana-k8s-monitoring-kepler-zhcqp                          1/1     Running   0             3m8s
+grafana-k8s-monitoring-kube-state-metrics-85f4448db8-qcl8m   1/1     Running   0             3m8s
+grafana-k8s-monitoring-node-exporter-fqchr                   1/1     Running   0             3m8s
+grafana-k8s-monitoring-opencost-7d97d888fc-r8db9             1/1     Running   4 (86s ago)   3m8s
 ```
 
-For example:
+## 📈 **7. Access the Grafana Cloud Dashboard**
 
-```
-http://136.114.199.97:8501
-```
+Return to Grafana Cloud.
+Below where you copied your Helm deployment code, click **Go to homepage**.
+This opens your pre-configured **Kubernetes Monitoring Dashboard**.
 
-*(Note: do not use `https://` — it may cause connection issues in some environments.)*
+You should now be able to visualise your cluster’s performance, node health, resource utilisation, and log activity in real time.
 
-If everything is configured correctly, your **LLMOps Anime Recommender System** web app will load in your browser and be fully interactive!
+<p align="center">
+  <img src="img/grafana/dashboard.png" alt="Grafana Cloud Kubernetes Dashboard" style="width:100%; height:auto;" />
+</p>
 
-## ✅ **In Summary**
-
-You have now successfully:
-
-* Built and containerised your application using **Docker**.
-* Deployed it on **Kubernetes** via **Minikube**.
-* Injected API secrets into the cluster securely.
-* Exposed the service externally using a **Minikube tunnel** and **port forwarding**.
-
-Your **LLMOps Anime Recommender System** is now live and running inside a fully functional Kubernetes environment on **Google Cloud Platform** — completing your end-to-end cloud deployment.
+✅ **Grafana Cloud Monitoring successfully integrated with your LLMOps Anime Recommender System!**
