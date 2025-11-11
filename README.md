@@ -1,142 +1,160 @@
-# 🚢 Containerisation & Kubernetes Deployment — LLMOps Anime Recommender System
+# ☁️ **GCP Virtual Machine Setup — LLMOps Anime Recommender System**
 
-This stage packages the app into a Docker image and provides a Kubernetes manifest to run it as a service. You can run the container locally for quick checks, then deploy it to a cluster (Minikube, kind, or a managed cloud).
+In this stage, we deploy our environment to **Google Cloud Platform (GCP)** using a **Compute Engine Virtual Machine (VM)** and install the **Docker Engine**.
+This setup provides a reliable cloud-based environment for building, testing, and running the **LLMOps Anime Recommender System** inside containers.
 
-## 🗂️ Project Structure (Updated)
+## 🧭 **Step 1 — Launch a GCP VM**
 
-```text
-llmops_anime_recommender_system/
-├── .env
-├── .gitignore
-├── .python-version
-├── app/
-│   └── app.py
-├── config/
-│   └── config.py
-├── data/
-├── pipeline/
-│   ├── build_pipeline.py
-│   └── recommendation_pipeline.py
-├── src/
-│   ├── data_loader.py
-│   ├── vector_store.py
-│   ├── prompt_template.py
-│   └── recommender.py
-├── utils/
-│   ├── __init__.py
-│   ├── custom_exception.py
-│   └── logger.py
-├── img/
-│   └── streamlit/streamlit_app.gif
-├── Dockerfile                 # New: container image definition
-├── llmops-k8s.yaml            # New: Deployment + Service manifest
-├── pyproject.toml
-├── requirements.txt
-├── setup.py
-├── uv.lock
-└── README.md
+1. Log into or sign up for [**Google Cloud Platform**](https://cloud.google.com/).
+2. Search for **Compute Engine** in the GCP console and go to **VM instances**.
+3. Click **+ Create instance**.
+
+### Machine Configuration
+
+Keep all defaults **except** for the *Machine type*.
+Change it to:
+
+```
+e2-standard-4 (4 vCPU, 2 core, 16 GB memory)
 ```
 
-## 🧱 Build the Image
+in the **Standard** tab.
+
+### OS and Storage
+
+Under **OS and storage**, click **Change** and select the options shown below:
+
+<p align="center">
+  <img src="img/vm_setup/change_os.png" alt="Change OS Settings in GCP" width="80%">
+</p>
+
+### Networking
+
+Under **Networking → Firewall**, check the following boxes:
+
+* ✅ Allow HTTP traffic
+* ✅ Allow HTTPS traffic
+* ✅ Allow Load Balancer Health Checks
+
+Also **enable IP forwarding**.
+
+Now click **Create** to launch your instance.
+
+When the instance is ready, click **SSH** under *Connect* to open an SSH-in-browser terminal.
+
+## ⚙️ **Step 2 — Install Docker Engine**
+
+Go to the official Docker documentation:
+👉 [https://docs.docker.com/engine/install/ubuntu/](https://docs.docker.com/engine/install/ubuntu/)
+
+Scroll down to **“Install using the apt repository”** and copy the code under **1. Set up Docker’s apt repository.**
+Paste the following into your VM terminal:
 
 ```bash
-# From repo root
-docker build -t llmops-app:latest .
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
 ```
 
-Run locally to verify:
+Then scroll to **2. Install the Docker packages** and run only the first command:
 
 ```bash
-# Uses your .env for secrets; app serves on 8501
-docker run --rm -p 8501:8501 --env-file .env llmops-app:latest
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-Open [http://localhost:8501](http://localhost:8501) to confirm it’s up.
-
-## 🔐 Create Kubernetes Secrets
-
-The manifest expects a secret named `llmops-secrets`. Create it from your `.env`:
+To verify the installation, run:
 
 ```bash
-kubectl create secret generic llmops-secrets --from-env-file=.env
+sudo docker run hello-world
 ```
 
-If you’re using a namespace, add `-n <your-namespace>` here and in all following commands.
+You should see a message beginning with:
 
-## ☸️ Deploy to Kubernetes
+```
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+```
+
+## 🧪 **Step 3 — Enable Docker for Your User**
+
+Next, go to:
+👉 [https://docs.docker.com/engine/install/linux-postinstall/](https://docs.docker.com/engine/install/linux-postinstall/)
+
+Copy and paste the following commands into your terminal:
 
 ```bash
-kubectl apply -f llmops-k8s.yaml
-kubectl get pods
-kubectl get svc llmops-service
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker
+docker run hello-world
 ```
 
-The service is a `LoadBalancer`:
+This allows you to run Docker without needing `sudo`.
 
-* **Minikube:** expose and open
+Now scroll further down the same page to **“Configure Docker to start on boot with systemd.”**
+Run the following commands:
 
-  ```bash
-  minikube image load llmops-app:latest
-  minikube service llmops-service
-  ```
-* **kind:** load local image
+```bash
+sudo systemctl enable docker.service
+sudo systemctl enable containerd.service
+```
 
-  ```bash
-  kind load docker-image llmops-app:latest
-  kubectl apply -f llmops-k8s.yaml
-  kubectl get svc llmops-service
-  ```
-* **Managed cloud (e.g., GKE/AKS/EKS):** ensure `image` points to a registry (e.g., `gcr.io/.../llmops-app:tag`) and that your nodes can pull it.
+You should see output like:
 
-## 🧩 What the Manifest Does
+```
+Synchronizing state of docker.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install enable docker
+```
 
-* **Deployment**
+## ✅ **Step 4 — Confirm Installation**
 
-  * Name: `llmops-app`
-  * Image: `llmops-app:latest` with `IfNotPresent` (good for local clusters when you load the image)
-  * Port: container listens on `8501`
-  * Injects env vars from `llmops-secrets`
+Finally, confirm the installation by checking the version:
 
-* **Service**
+```bash
+docker version
+```
 
-  * Name: `llmops-service`
-  * Type: `LoadBalancer` for external access
-  * Port: `80` → `targetPort: 8501`
+You should see output similar to the following:
 
-## 🛠️ Tips and Troubleshooting
+```
+Client: Docker Engine - Community
+ Version:           29.0.0
+ API version:       1.52
+ Go version:        go1.25.4
+ Git commit:        3d4129b
+ Built:             Mon Nov 10 21:46:31 2025
+ OS/Arch:           linux/amd64
+ Context:           default
 
-* **Local image not found by cluster**
+Server: Docker Engine - Community
+ Engine:
+  Version:          29.0.0
+  API version:      1.52 (minimum version 1.44)
+  Go version:       go1.25.4
+  Git commit:       d105562
+  Built:            Mon Nov 10 21:46:31 2025
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          v2.1.5
+  GitCommit:        fcd43222d6b07379a4be9786bda52438f0dd16a1
+ runc:
+  Version:          1.3.3
+  GitCommit:        v1.3.3-0-gd842d771
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0
+```
 
-  * Minikube: `minikube image load llmops-app:latest`
-  * kind: `kind load docker-image llmops-app:latest`
-  * Or push to a remote registry and update the `image:` in `llmops-k8s.yaml`.
-
-* **Stuck on Pending External IP**
-
-  * On local clusters, `LoadBalancer` may not provision an external IP. Use `minikube service llmops-service` or change the service to `NodePort`:
-
-    ```yaml
-    spec:
-      type: NodePort
-      ports:
-        - port: 80
-          targetPort: 8501
-          nodePort: 30080
-    ```
-
-* **Secret updates**
-
-  * Update `.env`, then:
-
-    ```bash
-    kubectl delete secret llmops-secrets
-    kubectl create secret generic llmops-secrets --from-env-file=.env
-    kubectl rollout restart deployment/llmops-app
-    ```
-
-* **Production notes**
-
-  * Pin a specific image tag (e.g., `llmops-app:v1.0.0`), avoid `latest`.
-  * Add `resources.requests/limits` and `readinessProbe`/`livenessProbe` if you need tighter reliability.
-
-That’s it for this stage: you now have a reproducible **Docker image** and a **Kubernetes manifest** to run the app consistently across environments.
+Your **Docker Engine** is now fully installed and configured on your **GCP VM**.
+You’re ready to containerise and deploy the **LLMOps Anime Recommender System**.
