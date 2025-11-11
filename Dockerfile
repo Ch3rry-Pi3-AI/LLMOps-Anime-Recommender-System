@@ -5,7 +5,7 @@
 # --------------------------------------------------------------
 # Base Image
 # --------------------------------------------------------------
-FROM python:3.10-slim AS base
+FROM python:3.12-slim AS base
 
 
 # --------------------------------------------------------------
@@ -24,10 +24,16 @@ WORKDIR /app
 # --------------------------------------------------------------
 # System Dependencies
 # --------------------------------------------------------------
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     && rm -rf /var/lib/apt/lists/*
+
+
+# --------------------------------------------------------------
+# Upgrade pip and core tooling
+# --------------------------------------------------------------
+RUN python -m pip install --upgrade pip setuptools wheel
 
 
 # --------------------------------------------------------------
