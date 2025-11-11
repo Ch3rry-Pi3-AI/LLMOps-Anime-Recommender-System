@@ -59,7 +59,6 @@ class VectorStoreBuilder:
 
         # Create and persist the Chroma vector store
         db = Chroma.from_documents(texts, self.embedding, persist_directory=self.persist_dir)
-        db.persist()
 
     def load_vector_store(self):
         """
