@@ -1,66 +1,84 @@
 """
 recommender.py
 
-Defines the AnimeRecommender class, which connects the vector
-retriever and LLM to generate context-aware anime recommendations.
+Defines the AnimeRecommender class, which connects the retriever and Groq LLM
+using LCEL (LangChain Expression Language) runnables.
+This version avoids all legacy `langchain.chains` imports.
 """
 
-# --------------------------------------------------------------
-# Imports
-# --------------------------------------------------------------
-from langchain.chains import RetrievalQA
+from typing import Any, Iterable
 from langchain_groq import ChatGroq
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
 from src.prompt_template import get_anime_prompt
+
+
+def _format_docs(docs: Iterable[Any]) -> str:
+    """
+    Combine retrieved documents into a single formatted context string.
+
+    Parameters
+    ----------
+    docs : Iterable[Any]
+        List or iterable of LangChain Document objects or plain strings.
+
+    Returns
+    -------
+    str
+        Concatenated text representing document content.
+    """
+    parts = []
+    for doc in docs:
+        parts.append(getattr(doc, "page_content", str(doc)))
+        if len(parts) >= 8:  # limit context to keep prompt concise
+            break
+    return "\n\n".join(parts)
 
 
 class AnimeRecommender:
     """
-    A recommendation engine that uses a retriever and a Groq LLM
-    to provide personalised anime recommendations.
+    Anime recommender pipeline built with LCEL runnables.
 
     Parameters
     ----------
-    retriever : BaseRetriever
-        The retriever instance (e.g., Chroma retriever) that provides
-        context from the vector database.
+    retriever : Any
+        Retriever instance (e.g., Chroma retriever) supporting `.invoke(question)`.
     api_key : str
-        The Groq API key used for authentication.
+        Groq API key.
     model_name : str
-        The name of the Groq model to be used for inference.
+        Groq model name (e.g., "llama-3.1-8b-instant").
     """
 
-    def __init__(self, retriever, api_key: str, model_name: str):
-        # Initialise the Groq LLM with zero temperature for factual, stable outputs
+    def __init__(self, retriever: Any, api_key: str, model_name: str):
+        self.retriever = retriever
         self.llm = ChatGroq(api_key=api_key, model=model_name, temperature=0)
+        self.prompt = get_anime_prompt()  # expects {context} and {question}
 
-        # Load the prompt template for structured recommendations
-        self.prompt = get_anime_prompt()
-
-        # Set up the RetrievalQA chain that combines the retriever and LLM
-        self.qa_chain = RetrievalQA.from_chain_type(
-            llm=self.llm,
-            chain_type="stuff",
-            retriever=retriever,
-            return_source_documents=True,
-            chain_type_kwargs={"prompt": self.prompt}
+        # Build LCEL chain: question → retriever → context → prompt → LLM → text
+        self.chain = (
+            {
+                "question": RunnablePassthrough(),
+                "context": RunnablePassthrough()
+                | self.retriever
+                | RunnableLambda(_format_docs),
+            }
+            | self.prompt
+            | self.llm
+            | StrOutputParser()
         )
 
     def get_recommendation(self, query: str) -> str:
         """
-        Generate anime recommendations based on a user query.
+        Generate an anime recommendation response for a given query.
 
         Parameters
         ----------
         query : str
-            The user's input query describing their anime preferences.
+            The user’s input describing their preferences.
 
         Returns
         -------
         str
-            The model-generated recommendation response.
+            The LLM-generated recommendation text.
         """
-        # Run the RetrievalQA chain with the user's query
-        result = self.qa_chain({"query": query})
-
-        # Return only the text output (recommendation response)
-        return result["result"]
+        return self.chain.invoke(query)

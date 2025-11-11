@@ -8,7 +8,7 @@ used in the LLMOps Anime Recommender System.
 # --------------------------------------------------------------
 # Imports
 # --------------------------------------------------------------
-from langchain.text_splitter import CharacterTextSplitter
+from langchain_text_splitters import CharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_huggingface import HuggingFaceEmbeddings
