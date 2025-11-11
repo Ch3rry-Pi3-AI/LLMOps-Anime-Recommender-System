@@ -1,6 +1,6 @@
 # 🌸 **LLMOps Anime Recommender System — Project Overview**
 
-This repository presents a **fully operational LLMOps workflow** for an **anime recommendation system**, integrating all stages from **data ingestion and embedding generation** to **LLM reasoning**, **containerisation**, and **cloud deployment** on **Google Cloud Platform (GCP)** using **Docker** and **Kubernetes**.
+This repository presents a **complete LLMOps workflow** for an **anime recommendation system**, covering every layer from **data processing and embedding generation** to **LLM reasoning**, **containerisation**, and **cloud deployment** on **Google Cloud Platform (GCP)** using **Docker** and **Kubernetes**.
 
 <p align="center">
   <img src="img/streamlit/streamlit_app.gif" alt="Streamlit App Demo" width="100%">
@@ -8,15 +8,15 @@ This repository presents a **fully operational LLMOps workflow** for an **anime 
 
 ## 🧩 **Grouped Stages**
 
-| Stage                                   | Description                                                                                                                                          |
-| :-------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **00 — Project Setup**                  | Initialised the VS Code structure, virtual environment, and configuration files.                                                                     |
-| **01–05 — Core LLM Logic**              | Built the data loader, vector store, prompt template, and recommender class, then unified them through a modular pipeline.                           |
-| **06 — Streamlit Application**          | Developed an interactive front end for generating personalised anime recommendations.                                                                |
-| **07 — Containerisation and Manifests** | Authored the Dockerfile and Kubernetes YAML manifests for deployment.                                                                                |
-| **08 — GCP VM and Docker Setup**        | Configured a GCP Virtual Machine and installed Docker Engine for container management.                                                               |
-| **09–11 — Cluster and Deployment**      | Installed Minikube and kubectl, configured networking and firewall rules, deployed the application to Kubernetes, and exposed it via an external IP. |
-| **12 — Grafana Cloud Monitoring**       | Integrated Grafana Cloud for system metrics and real-time monitoring dashboards.                                                                     |
+|     #     | Stage                            | Description                                                                                                                   |
+| :-------: | :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- |
+|   **00**  | **Project Setup**                | Established the base VS Code structure, environment setup, and configuration files.                                           |
+| **01–05** | **Core LLM Logic**               | Built the data loader, vector store, prompt template, and recommender class, then unified them through a modular pipeline.    |
+|   **06**  | **Streamlit Application**        | Developed a responsive front end that allows users to generate personalised anime recommendations.                            |
+|   **07**  | **Containerisation & Manifests** | Authored the Dockerfile and Kubernetes YAML manifests for scalable deployment.                                                |
+|   **08**  | **GCP VM & Docker Setup**        | Configured a GCP Virtual Machine and installed Docker Engine for container management.                                        |
+| **09–11** | **Cluster & Deployment**         | Installed Minikube and kubectl, configured firewall rules, deployed the app on Kubernetes, and exposed it via an external IP. |
+|   **12**  | **Grafana Cloud Monitoring**     | Integrated Grafana Cloud for visualising metrics, system health, and performance trends.                                      |
 
 ## 🗂️ **Project Structure**
 
@@ -55,5 +55,6 @@ llmops_anime_recommender_system/
 
 ## 🚀 **Summary**
 
-The **LLMOps Anime Recommender System** showcases how a **retrieval-augmented generation (RAG)** pipeline can be transformed from concept to **production-grade deployment**.
-It unites **LLM reasoning**, **vector-based retrieval**, and **prompt engineering** within a robust **DevOps and MLOps infrastructure**, serving as a foundational blueprint for future **scalable and monitored LLM applications**.
+The **LLMOps Anime Recommender System** demonstrates how to take a **retrieval-augmented generation (RAG)** workflow from prototype to production.
+It combines **LLM reasoning**, **vector-based retrieval**, and **prompt engineering** within a robust **MLOps pipeline** deployed on **Kubernetes**, forming a scalable foundation for future **LLMOps-driven applications**.
+
