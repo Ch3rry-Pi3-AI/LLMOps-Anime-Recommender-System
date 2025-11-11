@@ -2,55 +2,35 @@
 # 🐍 Dockerfile — LLMOps Anime Recommender App
 # --------------------------------------------------------------
 
-# --------------------------------------------------------------
-# Base Image
-# --------------------------------------------------------------
-FROM python:3.10-slim AS base
+# Base image: match your pyproject requires-python (>=3.12)
+FROM python:3.12-slim AS base
 
-
-# --------------------------------------------------------------
-# Environment Variables
-# --------------------------------------------------------------
+# Environment
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-
-# --------------------------------------------------------------
-# Working Directory
-# --------------------------------------------------------------
+# Working dir
 WORKDIR /app
 
-
-# --------------------------------------------------------------
-# System Dependencies
-# --------------------------------------------------------------
-RUN apt-get update && apt-get install -y \
+# System deps (wheel building, etc.)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*
 
+# Upgrade pip tooling first (often avoids build issues)
+RUN python -m pip install --upgrade pip setuptools wheel
 
-# --------------------------------------------------------------
-# Copy Application Files
-# --------------------------------------------------------------
+# Copy project
 COPY . .
 
-
-# --------------------------------------------------------------
-# Python Dependencies
-# --------------------------------------------------------------
+# Install your package (editable)
 RUN pip install --no-cache-dir -e .
 
-
-# --------------------------------------------------------------
-# Expose Port
-# --------------------------------------------------------------
+# Expose Streamlit
 EXPOSE 8501
 
-
-# --------------------------------------------------------------
-# Application Entry Point
-# --------------------------------------------------------------
+# Entrypoint
 CMD ["streamlit", "run", "app/app.py", \
      "--server.port=8501", \
      "--server.address=0.0.0.0", \
