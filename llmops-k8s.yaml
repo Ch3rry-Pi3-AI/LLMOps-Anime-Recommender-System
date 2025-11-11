@@ -1,0 +1,46 @@
+# --------------------------------------------------------------
+# Kubernetes Deployment — LLMOps Anime Recommender App
+# --------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llmops-app
+  labels:
+    app: llmops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llmops
+  template:
+    metadata:
+      labels:
+        app: llmops
+    spec:
+      containers:
+        - name: llmops-container
+          image: llmops-app:latest     # 🧩 Local image reference
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8501      # 🌐 Streamlit app port
+          envFrom:
+            - secretRef:
+                name: llmops-secrets    # 🔑 Inject environment secrets
+
+---
+
+# --------------------------------------------------------------
+# Kubernetes Service — LLMOps Anime Recommender App
+# --------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: llmops-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: llmops
+  ports:
+    - protocol: TCP
+      port: 80                         # External access port
+      targetPort: 8501                 # Internal container port

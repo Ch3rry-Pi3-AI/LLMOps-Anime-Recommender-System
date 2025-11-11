@@ -1,102 +1,142 @@
-# 🎨 **Streamlit Application — LLMOps Anime Recommender System**
+# 🚢 Containerisation & Kubernetes Deployment — LLMOps Anime Recommender System
 
-This stage introduces the **front-end layer** of the **LLMOps Anime Recommender System**, transforming the backend pipelines into an **interactive web application** built with **Streamlit**.
-The app provides a clean, responsive interface for users to describe their anime preferences or select predefined themes and receive **real-time, LLM-powered recommendations**.
+This stage packages the app into a Docker image and provides a Kubernetes manifest to run it as a service. You can run the container locally for quick checks, then deploy it to a cluster (Minikube, kind, or a managed cloud).
 
-<p align="center">
-  <img src="img/streamlit/streamlit_app.gif" alt="Anime Recommender Streamlit App Demo" width="100%" />
-</p>
-
-## 🗂️ **Project Structure (Updated)**
+## 🗂️ Project Structure (Updated)
 
 ```text
 llmops_anime_recommender_system/
-├── .env                             # 🔑 API keys (Groq & Hugging Face)
-├── .gitignore                       # 🚫 Git ignore rules
-├── .python-version                  # 🐍 Python version pin for consistency
+├── .env
+├── .gitignore
+├── .python-version
 ├── app/
-│   └── app.py                       # 🎨 Streamlit front-end for user interaction
+│   └── app.py
 ├── config/
-│   └── config.py                    # ⚙️ Loads environment variables and model configuration
-├── data/                            # 📊 Contains raw and processed anime datasets
+│   └── config.py
+├── data/
 ├── pipeline/
-│   ├── build_pipeline.py            # 🏗️ Builds data and vector store pipeline
-│   └── recommendation_pipeline.py   # 🤖 Executes full recommendation workflow
+│   ├── build_pipeline.py
+│   └── recommendation_pipeline.py
 ├── src/
-│   ├── data_loader.py               # 📥 Loads and preprocesses the anime dataset
-│   ├── vector_store.py              # 🧠 Builds and loads the Chroma vector store
-│   ├── prompt_template.py           # 💬 Defines structured LLM prompt
-│   └── recommender.py               # 🔗 Connects retriever and Groq LLM via LCEL
+│   ├── data_loader.py
+│   ├── vector_store.py
+│   ├── prompt_template.py
+│   └── recommender.py
 ├── utils/
 │   ├── __init__.py
-│   ├── custom_exception.py          # Unified exception handling
-│   └── logger.py                    # Centralised logging configuration
+│   ├── custom_exception.py
+│   └── logger.py
 ├── img/
-│   └── streamlit/streamlit_app.gif  # 🎞️ Demonstration of the final Streamlit interface
-├── pyproject.toml                   # 🧩 Project metadata and uv configuration
-├── requirements.txt                 # 📦 Dependencies
-├── setup.py                         # 🔧 Editable install support
-├── uv.lock                          # 🔒 Dependency lock file
-└── README.md                        # 📖 Documentation (you are here)
+│   └── streamlit/streamlit_app.gif
+├── Dockerfile                 # New: container image definition
+├── llmops-k8s.yaml            # New: Deployment + Service manifest
+├── pyproject.toml
+├── requirements.txt
+├── setup.py
+├── uv.lock
+└── README.md
 ```
 
-## ⚙️ **Overview of the Streamlit App**
-
-The **`app.py`** module serves as the **presentation layer** of the project — integrating directly with the `AnimeRecommendationPipeline` to deliver a polished, user-friendly recommendation experience.
-
-### 🧩 Core Features
-
-1. **Interactive Query Input**
-   Users can enter free-text descriptions of their preferences or choose from preset themes like *Action*, *Romance*, *Drama*, or *Slice of Life*.
-
-2. **Automatic Generation on Enter or Click**
-   Pressing *Enter* or selecting a theme automatically triggers a recommendation query without additional input.
-
-3. **Real-Time Recommendations**
-   The app fetches responses from the Groq-powered LLM pipeline and displays them in a structured format with:
-
-   * **Title**
-   * **Plot Summary**
-   * **Why it matches your preferences**
-
-4. **Dynamic Layout and Styling**
-   Centered input layout, responsive design, and Markdown-based cards ensure clear readability and a professional presentation.
-
-## 🚀 **Running the Application**
-
-From the project root, start the app with:
+## 🧱 Build the Image
 
 ```bash
-streamlit run app/app.py
+# From repo root
+docker build -t llmops-app:latest .
 ```
 
-Once launched, Streamlit will open a local browser window (typically at `http://localhost:8501`).
+Run locally to verify:
 
-You can then type prompts such as:
-
-> *“Dark thriller anime with psychological themes and mystery.”*
-
-or select a theme button like *Romance* or *Action*.
-
-The system will respond with structured, concise recommendations, for example:
-
-```
-1. Death Note — A brilliant student discovers a notebook with deadly powers.
-   Why it matches your preferences: Dark psychological tension and moral complexity.
-
-2. Paranoia Agent — Surreal exploration of anxiety, guilt, and shared delusion.
-   Why it matches your preferences: Psychological mystery and layered storytelling.
-
-3. Monster — A gripping cat-and-mouse chase between a doctor and his former patient.
-   Why it matches your preferences: Complex moral undertones and psychological suspense.
+```bash
+# Uses your .env for secrets; app serves on 8501
+docker run --rm -p 8501:8501 --env-file .env llmops-app:latest
 ```
 
-## ✅ **In Summary**
+Open [http://localhost:8501](http://localhost:8501) to confirm it’s up.
 
-This stage marks the **transition from backend logic to user-facing interaction**, completing the full LLMOps cycle:
+## 🔐 Create Kubernetes Secrets
 
-* Integrates the **recommendation pipeline** into a web interface.
-* Provides an **intuitive and aesthetic** way for users to explore anime suggestions.
-* Demonstrates how **LLM reasoning** and **retrieval-augmented workflows** can be deployed interactively.
+The manifest expects a secret named `llmops-secrets`. Create it from your `.env`:
 
-The **Streamlit application** now represents the project’s **final deployment layer** — turning your engineered recommendation system into a live, accessible experience.
+```bash
+kubectl create secret generic llmops-secrets --from-env-file=.env
+```
+
+If you’re using a namespace, add `-n <your-namespace>` here and in all following commands.
+
+## ☸️ Deploy to Kubernetes
+
+```bash
+kubectl apply -f llmops-k8s.yaml
+kubectl get pods
+kubectl get svc llmops-service
+```
+
+The service is a `LoadBalancer`:
+
+* **Minikube:** expose and open
+
+  ```bash
+  minikube image load llmops-app:latest
+  minikube service llmops-service
+  ```
+* **kind:** load local image
+
+  ```bash
+  kind load docker-image llmops-app:latest
+  kubectl apply -f llmops-k8s.yaml
+  kubectl get svc llmops-service
+  ```
+* **Managed cloud (e.g., GKE/AKS/EKS):** ensure `image` points to a registry (e.g., `gcr.io/.../llmops-app:tag`) and that your nodes can pull it.
+
+## 🧩 What the Manifest Does
+
+* **Deployment**
+
+  * Name: `llmops-app`
+  * Image: `llmops-app:latest` with `IfNotPresent` (good for local clusters when you load the image)
+  * Port: container listens on `8501`
+  * Injects env vars from `llmops-secrets`
+
+* **Service**
+
+  * Name: `llmops-service`
+  * Type: `LoadBalancer` for external access
+  * Port: `80` → `targetPort: 8501`
+
+## 🛠️ Tips and Troubleshooting
+
+* **Local image not found by cluster**
+
+  * Minikube: `minikube image load llmops-app:latest`
+  * kind: `kind load docker-image llmops-app:latest`
+  * Or push to a remote registry and update the `image:` in `llmops-k8s.yaml`.
+
+* **Stuck on Pending External IP**
+
+  * On local clusters, `LoadBalancer` may not provision an external IP. Use `minikube service llmops-service` or change the service to `NodePort`:
+
+    ```yaml
+    spec:
+      type: NodePort
+      ports:
+        - port: 80
+          targetPort: 8501
+          nodePort: 30080
+    ```
+
+* **Secret updates**
+
+  * Update `.env`, then:
+
+    ```bash
+    kubectl delete secret llmops-secrets
+    kubectl create secret generic llmops-secrets --from-env-file=.env
+    kubectl rollout restart deployment/llmops-app
+    ```
+
+* **Production notes**
+
+  * Pin a specific image tag (e.g., `llmops-app:v1.0.0`), avoid `latest`.
+  * Add `resources.requests/limits` and `readinessProbe`/`livenessProbe` if you need tighter reliability.
+
+That’s it for this stage: you now have a reproducible **Docker image** and a **Kubernetes manifest** to run the app consistently across environments.
