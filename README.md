@@ -1,7 +1,11 @@
-# 🔁 **Pipeline Orchestration — LLMOps Anime Recommender System**
+# 🎨 **Streamlit Application — LLMOps Anime Recommender System**
 
-This stage brings together all the **core backend workflows** of the **LLMOps Anime Recommender System**, combining data ingestion, embedding generation, and end-to-end anime recommendation logic.
-It introduces two main pipelines — one for building the system’s vector database and another for producing live recommendations via the Groq-powered LLM.
+This stage introduces the **front-end layer** of the **LLMOps Anime Recommender System**, transforming the backend pipelines into an **interactive web application** built with **Streamlit**.
+The app provides a clean, responsive interface for users to describe their anime preferences or select predefined themes and receive **real-time, LLM-powered recommendations**.
+
+<p align="center">
+  <img src="img/streamlit/streamlit_app.gif" alt="Anime Recommender Streamlit App Demo" width="100%" />
+</p>
 
 ## 🗂️ **Project Structure (Updated)**
 
@@ -10,22 +14,25 @@ llmops_anime_recommender_system/
 ├── .env                             # 🔑 API keys (Groq & Hugging Face)
 ├── .gitignore                       # 🚫 Git ignore rules
 ├── .python-version                  # 🐍 Python version pin for consistency
-├── app/                             # 🎨 Streamlit application (to be developed)
+├── app/
+│   └── app.py                       # 🎨 Streamlit front-end for user interaction
 ├── config/
 │   └── config.py                    # ⚙️ Loads environment variables and model configuration
 ├── data/                            # 📊 Contains raw and processed anime datasets
 ├── pipeline/
-│   ├── build_pipeline.py             # 🏗️ Builds data and vector store pipeline
-│   └── recommendation_pipeline.py    # 🤖 Executes full recommendation workflow
+│   ├── build_pipeline.py            # 🏗️ Builds data and vector store pipeline
+│   └── recommendation_pipeline.py   # 🤖 Executes full recommendation workflow
 ├── src/
-│   ├── data_loader.py               # 📥 Loads and preprocesses anime data
-│   ├── vector_store_builder.py      # 🧠 Builds and loads the Chroma vector store
+│   ├── data_loader.py               # 📥 Loads and preprocesses the anime dataset
+│   ├── vector_store.py              # 🧠 Builds and loads the Chroma vector store
 │   ├── prompt_template.py           # 💬 Defines structured LLM prompt
 │   └── recommender.py               # 🔗 Connects retriever and Groq LLM via LCEL
 ├── utils/
 │   ├── __init__.py
-│   ├── custom_exception.py          # Unified error handling
-│   └── logger.py                    # Centralised logging setup
+│   ├── custom_exception.py          # Unified exception handling
+│   └── logger.py                    # Centralised logging configuration
+├── img/
+│   └── streamlit/streamlit_app.gif  # 🎞️ Demonstration of the final Streamlit interface
 ├── pyproject.toml                   # 🧩 Project metadata and uv configuration
 ├── requirements.txt                 # 📦 Dependencies
 ├── setup.py                         # 🔧 Editable install support
@@ -33,61 +40,63 @@ llmops_anime_recommender_system/
 └── README.md                        # 📖 Documentation (you are here)
 ```
 
-## ⚙️ **Overview of the Pipeline Stage**
+## ⚙️ **Overview of the Streamlit App**
 
-### 🏗️ `build_pipeline.py`
+The **`app.py`** module serves as the **presentation layer** of the project — integrating directly with the `AnimeRecommendationPipeline` to deliver a polished, user-friendly recommendation experience.
 
-Automates the full data-to-vector workflow:
+### 🧩 Core Features
 
-1. Loads and preprocesses the anime dataset using `AnimeDataLoader`.
-2. Builds embeddings from processed text via `VectorStoreBuilder`.
-3. Saves a persistent **Chroma vector store** for downstream retrieval.
-4. Provides a reproducible foundation for all later inference steps.
+1. **Interactive Query Input**
+   Users can enter free-text descriptions of their preferences or choose from preset themes like *Action*, *Romance*, *Drama*, or *Slice of Life*.
 
-**Example:**
+2. **Automatic Generation on Enter or Click**
+   Pressing *Enter* or selecting a theme automatically triggers a recommendation query without additional input.
 
-```bash
-python pipeline/build_pipeline.py
-```
+3. **Real-Time Recommendations**
+   The app fetches responses from the Groq-powered LLM pipeline and displays them in a structured format with:
 
-**Output:**
+   * **Title**
+   * **Plot Summary**
+   * **Why it matches your preferences**
 
-```
-🚀 Starting pipeline build...
-✅ Data successfully loaded and processed.
-✅ Vector store built and persisted successfully.
-🎯 Pipeline build completed successfully.
-```
+4. **Dynamic Layout and Styling**
+   Centered input layout, responsive design, and Markdown-based cards ensure clear readability and a professional presentation.
 
-### 🤖 `recommendation_pipeline.py`
+## 🚀 **Running the Application**
 
-Implements the runtime recommendation logic:
-
-1. Loads the stored **Chroma vector database**.
-2. Initialises the **AnimeRecommender** class with the retriever, Groq LLM, and structured prompt.
-3. Accepts user queries and returns detailed, context-aware anime recommendations.
-
-**Example:**
+From the project root, start the app with:
 
 ```bash
-python pipeline/recommendation_pipeline.py
+streamlit run app/app.py
 ```
 
-**Sample Output:**
+Once launched, Streamlit will open a local browser window (typically at `http://localhost:8501`).
+
+You can then type prompts such as:
+
+> *“Dark thriller anime with psychological themes and mystery.”*
+
+or select a theme button like *Romance* or *Action*.
+
+The system will respond with structured, concise recommendations, for example:
 
 ```
-1. Violet Evergarden — A young woman trained as a weapon learns to write letters that connect people...
-2. Clannad: After Story — A heartfelt exploration of love, loss, and family...
-3. Your Lie in April — A touching story of music, grief, and personal growth...
+1. Death Note — A brilliant student discovers a notebook with deadly powers.
+   Why it matches your preferences: Dark psychological tension and moral complexity.
 
-Each of these anime explores emotional themes and strong character arcs.
+2. Paranoia Agent — Surreal exploration of anxiety, guilt, and shared delusion.
+   Why it matches your preferences: Psychological mystery and layered storytelling.
+
+3. Monster — A gripping cat-and-mouse chase between a doctor and his former patient.
+   Why it matches your preferences: Complex moral undertones and psychological suspense.
 ```
 
 ## ✅ **In Summary**
 
-The **pipeline stage** unifies the entire backend logic of the project:
+This stage marks the **transition from backend logic to user-facing interaction**, completing the full LLMOps cycle:
 
-* `build_pipeline.py` prepares and embeds the dataset into a Chroma vector store.
-* `recommendation_pipeline.py` retrieves context and generates structured recommendations through the Groq LLM.
+* Integrates the **recommendation pipeline** into a web interface.
+* Provides an **intuitive and aesthetic** way for users to explore anime suggestions.
+* Demonstrates how **LLM reasoning** and **retrieval-augmented workflows** can be deployed interactively.
 
-Together, they form the **operational core** of the LLMOps Anime Recommender System — seamlessly linking data, embeddings, and intelligent recommendations, and providing a robust backend for future Streamlit interface integration.
+The **Streamlit application** now represents the project’s **final deployment layer** — turning your engineered recommendation system into a live, accessible experience.
