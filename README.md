@@ -1,7 +1,7 @@
-# 🤖 **LLM-Powered Recommender Integration — LLMOps Anime Recommender System**
+# 🔁 **Pipeline Orchestration — LLMOps Anime Recommender System**
 
-This stage introduces the **final core backend component** of the **LLMOps Anime Recommender System** — the **anime recommender engine**.
-The `AnimeRecommender` class integrates the **retriever**, **vector store**, **prompt template**, and **Groq LLM**, enabling **end-to-end, retrieval-augmented anime recommendations**.
+This stage brings together all the **core backend workflows** of the **LLMOps Anime Recommender System**, combining data ingestion, embedding generation, and end-to-end anime recommendation logic.
+It introduces two main pipelines — one for building the system’s vector database and another for producing live recommendations via the Groq-powered LLM.
 
 ## 🗂️ **Project Structure (Updated)**
 
@@ -14,12 +14,14 @@ llmops_anime_recommender_system/
 ├── config/
 │   └── config.py                    # ⚙️ Loads environment variables and model configuration
 ├── data/                            # 📊 Contains raw and processed anime datasets
-├── pipeline/                        # 🔁 Placeholder for workflow scripts
+├── pipeline/
+│   ├── build_pipeline.py             # 🏗️ Builds data and vector store pipeline
+│   └── recommendation_pipeline.py    # 🤖 Executes full recommendation workflow
 ├── src/
-│   ├── data_loader.py               # 📥 Loads and preprocesses the anime dataset
+│   ├── data_loader.py               # 📥 Loads and preprocesses anime data
 │   ├── vector_store_builder.py      # 🧠 Builds and loads the Chroma vector store
-│   ├── prompt_template.py           # 💬 Defines the structured LLM prompt
-│   └── recommender.py               # 🤖 Generates LLM-based anime recommendations
+│   ├── prompt_template.py           # 💬 Defines structured LLM prompt
+│   └── recommender.py               # 🔗 Connects retriever and Groq LLM via LCEL
 ├── utils/
 │   ├── __init__.py
 │   ├── custom_exception.py          # Unified error handling
@@ -31,44 +33,47 @@ llmops_anime_recommender_system/
 └── README.md                        # 📖 Documentation (you are here)
 ```
 
-## ⚙️ **Overview of `recommender.py`**
+## ⚙️ **Overview of the Pipeline Stage**
 
-The **`AnimeRecommender`** class serves as the heart of the system — connecting the vector store retriever and the Groq LLM via a **RetrievalQA** chain.
-This module completes the **retrieval-augmented generation (RAG)** pipeline that powers the anime recommendation process.
+### 🏗️ `build_pipeline.py`
 
-### Key Functions
+Automates the full data-to-vector workflow:
 
-1. **Initialises the Groq LLM** (`ChatGroq`) with a fixed temperature for consistent, factual responses.
-2. **Combines** the retriever, prompt template, and LLM into a single LangChain `RetrievalQA` chain.
-3. **Retrieves relevant anime context** from the Chroma vector database.
-4. **Generates structured, user-specific recommendations** using the LLM and predefined prompt.
+1. Loads and preprocesses the anime dataset using `AnimeDataLoader`.
+2. Builds embeddings from processed text via `VectorStoreBuilder`.
+3. Saves a persistent **Chroma vector store** for downstream retrieval.
+4. Provides a reproducible foundation for all later inference steps.
 
-### Example Usage
+**Example:**
 
-```python
-from src.recommender import AnimeRecommender
-from src.vector_store_builder import VectorStoreBuilder
-from config.config import GROQ_API_KEY, MODEL_NAME
-
-# Load vector store and create retriever
-builder = VectorStoreBuilder(csv_path="data/processed_anime.csv")
-vector_store = builder.load_vector_store()
-retriever = vector_store.as_retriever()
-
-# Create the recommender
-recommender = AnimeRecommender(
-    retriever=retriever,
-    api_key=GROQ_API_KEY,
-    model_name=MODEL_NAME
-)
-
-# Generate recommendations
-query = "Recommend anime with deep character development and emotional storytelling."
-response = recommender.get_recommendation(query)
-print(response)
+```bash
+python pipeline/build_pipeline.py
 ```
 
-### Output Example
+**Output:**
+
+```
+🚀 Starting pipeline build...
+✅ Data successfully loaded and processed.
+✅ Vector store built and persisted successfully.
+🎯 Pipeline build completed successfully.
+```
+
+### 🤖 `recommendation_pipeline.py`
+
+Implements the runtime recommendation logic:
+
+1. Loads the stored **Chroma vector database**.
+2. Initialises the **AnimeRecommender** class with the retriever, Groq LLM, and structured prompt.
+3. Accepts user queries and returns detailed, context-aware anime recommendations.
+
+**Example:**
+
+```bash
+python pipeline/recommendation_pipeline.py
+```
+
+**Sample Output:**
 
 ```
 1. Violet Evergarden — A young woman trained as a weapon learns to write letters that connect people...
@@ -78,12 +83,11 @@ print(response)
 Each of these anime explores emotional themes and strong character arcs.
 ```
 
-The recommender retrieves relevant context from the **Chroma vector store**, injects it into the **prompt template**, and uses the **Groq LLM** to generate meaningful, structured, and human-like responses.
-
 ## ✅ **In Summary**
 
-This stage completes the **core backend workflow** of the project:
+The **pipeline stage** unifies the entire backend logic of the project:
 
-* Integrates `AnimeRecommender` for **end-to-end RAG-based inference**.
-* Connects the **data loader**, **vector store**, and **prompt template** into a unified recommendation pipeline.
-* Establishes a fully functional **LLM-powered anime recommendation engine**, paving the way for Streamlit frontend integration in the next phase.
+* `build_pipeline.py` prepares and embeds the dataset into a Chroma vector store.
+* `recommendation_pipeline.py` retrieves context and generates structured recommendations through the Groq LLM.
+
+Together, they form the **operational core** of the LLMOps Anime Recommender System — seamlessly linking data, embeddings, and intelligent recommendations, and providing a robust backend for future Streamlit interface integration.
