@@ -44,8 +44,8 @@ llmops_anime_recommender_system/
 │   └── logger.py
 ├── img/
 │   └── streamlit/streamlit_app.gif
-├── Dockerfile                 # Defines container image
-├── llmops-k8s.yaml            # Kubernetes Deployment + Service manifest
+├── Dockerfile                 
+├── llmops-k8s.yaml            
 ├── pyproject.toml
 ├── requirements.txt
 ├── setup.py
