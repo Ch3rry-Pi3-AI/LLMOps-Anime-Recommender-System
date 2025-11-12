@@ -8,26 +8,26 @@ Combined with the vector store and data loader, this marks the transition from *
 
 ```text
 llmops_anime_recommender_system/
-├── .env                             # 🔑 API keys (Groq & Hugging Face)
-├── .gitignore                       # 🚫 Git ignore rules
-├── .python-version                  # 🐍 Python version pin for consistency
-├── app/                             # 🎨 Streamlit application (to be developed)
+├── .env                             
+├── .gitignore                       
+├── .python-version                  
+├── app/                             
 ├── config/
-│   └── config.py                    # ⚙️ Loads environment variables and model configuration
-├── data/                            # 📊 Contains raw and processed anime datasets
-├── pipeline/                        # 🔁 Placeholder for workflow scripts
+│   └── config.py                    
+├── data/                            
+├── pipeline/                        
 ├── src/
-│   ├── data_loader.py               # 📥 Loads and preprocesses the anime dataset
-│   ├── vector_store_builder.py      # 🧠 Builds and loads the Chroma vector store
+│   ├── data_loader.py               
+│   ├── vector_store_builder.py      
 │   └── prompt_template.py           # 💬 Defines the LLM prompt structure for recommendations
 ├── utils/
 │   ├── __init__.py
-│   ├── custom_exception.py          # Unified error handling
-│   └── logger.py                    # Centralised logging setup
-├── pyproject.toml                   # 🧩 Project metadata and uv configuration
-├── requirements.txt                 # 📦 Dependencies
-├── setup.py                         # 🔧 Editable install support
-├── uv.lock                          # 🔒 Dependency lock file
+│   ├── custom_exception.py          
+│   └── logger.py                    
+├── pyproject.toml                   
+├── requirements.txt                 
+├── setup.py                         
+├── uv.lock                          
 └── README.md                        # 📖 Documentation (you are here)
 ```
 
