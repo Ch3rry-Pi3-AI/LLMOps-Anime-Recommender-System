@@ -7,29 +7,29 @@ It introduces two main pipelines — one for building the system’s vector data
 
 ```text
 llmops_anime_recommender_system/
-├── .env                             # 🔑 API keys (Groq & Hugging Face)
-├── .gitignore                       # 🚫 Git ignore rules
-├── .python-version                  # 🐍 Python version pin for consistency
-├── app/                             # 🎨 Streamlit application (to be developed)
+├── .env                            
+├── .gitignore                      
+├── .python-version              
+├── app/                          
 ├── config/
-│   └── config.py                    # ⚙️ Loads environment variables and model configuration
-├── data/                            # 📊 Contains raw and processed anime datasets
+│   └── config.py                   
+├── data/                       
 ├── pipeline/
 │   ├── build_pipeline.py             # 🏗️ Builds data and vector store pipeline
 │   └── recommendation_pipeline.py    # 🤖 Executes full recommendation workflow
 ├── src/
-│   ├── data_loader.py               # 📥 Loads and preprocesses anime data
-│   ├── vector_store_builder.py      # 🧠 Builds and loads the Chroma vector store
-│   ├── prompt_template.py           # 💬 Defines structured LLM prompt
-│   └── recommender.py               # 🔗 Connects retriever and Groq LLM via LCEL
+│   ├── data_loader.py              
+│   ├── vector_store_builder.py    
+│   ├── prompt_template.py         
+│   └── recommender.py            
 ├── utils/
 │   ├── __init__.py
-│   ├── custom_exception.py          # Unified error handling
-│   └── logger.py                    # Centralised logging setup
-├── pyproject.toml                   # 🧩 Project metadata and uv configuration
-├── requirements.txt                 # 📦 Dependencies
-├── setup.py                         # 🔧 Editable install support
-├── uv.lock                          # 🔒 Dependency lock file
+│   ├── custom_exception.py        
+│   └── logger.py                  
+├── pyproject.toml                
+├── requirements.txt               
+├── setup.py                  
+├── uv.lock                        
 └── README.md                        # 📖 Documentation (you are here)
 ```
 
