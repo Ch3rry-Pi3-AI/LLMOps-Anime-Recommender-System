@@ -7,25 +7,25 @@ The `AnimeDataLoader` class ensures that all required fields are present, handle
 
 ```text
 llmops_anime_recommender_system/
-├── .env                             # 🔑 API keys (Groq & Hugging Face)
-├── .gitignore                       # 🚫 Git ignore rules
-├── .python-version                  # 🐍 Python version pin for consistency
-├── app/                             # 🎨 Streamlit application (to be developed)
+├── .env                             
+├── .gitignore                       
+├── .python-version                  
+├── app/                             
 ├── config/
 │   └── config.py                    # ⚙️ Loads environment variables and model configuration
 ├── data/
 │   └── anime__with__synopsis.csv    # 📊 Dataset used by the data loader
-├── pipeline/                        # 🔁 Placeholder for future workflow scripts
+├── pipeline/                        
 ├── src/
 │   └── data_loader.py               # 📥 Loads and preprocesses the anime dataset
 ├── utils/
 │   ├── __init__.py
-│   ├── custom_exception.py          # Unified error handling
-│   └── logger.py                    # Centralised logging setup
-├── pyproject.toml                   # 🧩 Project metadata and uv configuration
-├── requirements.txt                 # 📦 Dependencies
-├── setup.py                         # 🔧 Editable install support
-├── uv.lock                          # 🔒 Dependency lock file
+│   ├── custom_exception.py          
+│   └── logger.py                    
+├── pyproject.toml                   
+├── requirements.txt                 
+├── setup.py                         
+├── uv.lock                          
 └── README.md                        # 📖 Documentation (you are here)
 ```
 
